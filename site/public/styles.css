@@ -510,9 +510,27 @@ html, body {
   background: inherit;
   border-radius: inherit;
 }
-.horse.live .horse-dust          { animation: dust-puff 0.7s ease-out infinite; }
-.horse.live .horse-dust::before  { animation: dust-puff 0.7s ease-out infinite; animation-delay: 0.23s; }
-.horse.live .horse-dust::after   { animation: dust-puff 0.7s ease-out infinite; animation-delay: 0.46s; }
+/* Dust is thrown up by hoofbeats, so its cycle tracks the stride: --dust-ratio
+   1.75 reproduces the original 0.7s puff at the default 0.4s gait, and a harder-
+   galloping horse now kicks up dust faster. The three puffs stay spread through
+   the cycle as thirds, offset by the horse's own phase so fields don't puff in
+   unison — a fraction rather than the old fixed 0.23s/0.46s delays, so the
+   spacing survives a pace change. */
+.horse.live .horse-dust,
+.horse.live .horse-dust::before,
+.horse.live .horse-dust::after {
+  --dust-ratio: 1.75;
+  animation: dust-puff calc(var(--gait-duration, 0.4s) * var(--dust-ratio)) ease-out infinite;
+}
+.horse.live .horse-dust {
+  animation-delay: calc(-1 * var(--gait-phase, 0) * var(--gait-duration, 0.4s) * var(--dust-ratio));
+}
+.horse.live .horse-dust::before {
+  animation-delay: calc(-1 * (var(--gait-phase, 0) + 0.333) * var(--gait-duration, 0.4s) * var(--dust-ratio));
+}
+.horse.live .horse-dust::after {
+  animation-delay: calc(-1 * (var(--gait-phase, 0) + 0.667) * var(--gait-duration, 0.4s) * var(--dust-ratio));
+}
 @keyframes dust-puff {
   0%   { opacity: 0;    transform: translate(0, 0)        scale(0.4); }
   20%  { opacity: 0.75;                                              }
@@ -835,25 +853,28 @@ html, body {
 }
 
 /* ── Apply to live / pending horses ── */
-.horse.live .leg-back,
-.horse.pending .leg-back {
-  animation: hip-back 0.4s ease-in-out infinite;
+
+/* One gait clock per horse (render/gait.ts writes --gait-duration from the
+   horse's token pace and --gait-phase from its id). Every joint shares both, so
+   the limbs stay coherent with each other while separate horses run out of step.
+   The phase is a fraction of the cycle rather than a fixed delay, so when the
+   pace changes the horse keeps its place in the stride instead of snapping.
+   Fallbacks reproduce the original fixed 0.4s gait if the vars are ever absent. */
+.horse.live, .horse.pending,
+.horse.live .leg-back, .horse.pending .leg-back,
+.horse.live .leg-back-lower, .horse.pending .leg-back-lower,
+.horse.live .leg-front, .horse.pending .leg-front,
+.horse.live .leg-front-lower, .horse.pending .leg-front-lower {
+  animation-duration: var(--gait-duration, 0.4s);
+  animation-delay: calc(-1 * var(--gait-phase, 0) * var(--gait-duration, 0.4s));
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
 }
-.horse.live .leg-back-lower,
-.horse.pending .leg-back-lower {
-  animation: knee-back 0.4s ease-in-out infinite;
-}
-.horse.live .leg-front,
-.horse.pending .leg-front {
-  animation: hip-front 0.4s ease-in-out infinite;
-}
-.horse.live .leg-front-lower,
-.horse.pending .leg-front-lower {
-  animation: knee-front 0.4s ease-in-out infinite;
-}
-.horse.live, .horse.pending {
-  animation: body-bob 0.4s ease-in-out infinite;
-}
+.horse.live .leg-back,        .horse.pending .leg-back        { animation-name: hip-back; }
+.horse.live .leg-back-lower,  .horse.pending .leg-back-lower  { animation-name: knee-back; }
+.horse.live .leg-front,       .horse.pending .leg-front       { animation-name: hip-front; }
+.horse.live .leg-front-lower, .horse.pending .leg-front-lower { animation-name: knee-front; }
+.horse.live, .horse.pending                                   { animation-name: body-bob; }
 
 /* ── Catalog view ─────────────────────────────────── */
 

@@ -20,6 +20,9 @@ function horse(
   user_name: string,
   tokens: number,
   xp: number,
+  // Trailing tokens/min. Drives leg speed (see render/gait.ts); `undefined`
+  // exercises the no-pace fallback.
+  pace: number | undefined,
   colors: { body: string; mane: string; tail: string; saddle: string },
   equipped_hat?: CollectedHat,
 ): HorseView {
@@ -36,6 +39,7 @@ function horse(
     user_id: `user-${id}`,
     user_name,
     xp,
+    ...(pace !== undefined ? { pace_15m: pace } : {}),
     ...(equipped_hat ? { equipped_hat } : {}),
   };
 }
@@ -45,22 +49,22 @@ const OBTAINED = new Date(RACE_START_MS - 24 * 60 * 60 * 1000).toISOString();
 function snapshot(now: number): GetRaceResponse {
   const horses = [
     // Stormbringer in the lead, sporting a rainbow crown (animated legendary)
-    horse(1, 'Stormbringer', 'Alice', 4280, 40,   COLORS_A,
+    horse(1, 'Stormbringer', 'Alice', 4280, 40,   5200,      COLORS_A,
       { id: 'rainbow_crown', obtained_at: OBTAINED }),
     // Pegasus chasing in a cowboy hat #1
-    horse(2, 'Pegasus',      'Bob',   3915, 170,  COLORS_B,
+    horse(2, 'Pegasus',      'Bob',   3915, 170,  3000,      COLORS_B,
       { id: 'cowboy_hat', variant: 0, obtained_at: OBTAINED }),
     // Cloudrunner in a sailor hat #1 (white + navy)
-    horse(3, 'Cloudrunner',  'Carol', 3502, 300,  COLORS_C,
+    horse(3, 'Cloudrunner',  'Carol', 3502, 300,  1500,      COLORS_C,
       { id: 'sailor_hat', variant: 0, obtained_at: OBTAINED }),
     // Thunderbolt: heavy hitter wearing a spartan helmet (epic, anchor extends forward)
-    horse(4, 'Thunderbolt',  'Dan',   2880, 1000, COLORS_D,
+    horse(4, 'Thunderbolt',  'Dan',   2880, 1000, 700,       COLORS_D,
       { id: 'spartan_helmet', variant: 0, obtained_at: OBTAINED }),
     // Embers: lit up with the inferno cap (animated legendary)
-    horse(5, 'Embers',       'Eve',   1240, 655,  COLORS_E,
+    horse(5, 'Embers',       'Eve',   1240, 655,  180,       COLORS_E,
       { id: 'inferno_cap', obtained_at: OBTAINED }),
     // Misty: bareheaded — control case so you can compare with-hat vs without
-    horse(6, 'Misty',        'Frank', 412,  10,   COLORS_F),
+    horse(6, 'Misty',        'Frank', 412,  10,   undefined, COLORS_F),
   ];
   const ranked: HorseView[] = horses
     .slice()

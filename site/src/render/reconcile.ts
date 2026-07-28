@@ -3,6 +3,7 @@ import { levelFromXp, hatById } from '@token-derby/shared';
 import { elapsedPct, horseXPct } from '../position.js';
 import { buildHorseSvg } from '../sprite-svg.js';
 import { buildHatGroup } from '../hat-svg.js';
+import { applyGait } from './gait.js';
 
 const tokenFmt = new Intl.NumberFormat('en-US');
 
@@ -187,6 +188,10 @@ function updateLane(
   wrap.style.left = `${x}%`;
   wrap.classList.toggle('live', pct > 0 && pct < 1);
   wrap.classList.toggle('pending', pct === 0);
+
+  // Re-applied every poll so the legs track the latest pace. Both values are
+  // derived from the horse id, so the phase and spread are stable across polls.
+  applyGait(wrap, horse.horse_id, pace);
 
   // Labels live in the fixed lane-info column, not on the moving horse.
   const tokensEl = lane.querySelector<HTMLElement>('.horse-tokens')!;
