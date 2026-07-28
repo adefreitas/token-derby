@@ -830,11 +830,14 @@ html, body {
 }
 
 /* ── Knee bend (nested inside hip group) ── */
+/* Hind knee bends the opposite way to the foreleg's — a horse's hock folds
+   forward while the fore knee folds back, so mirroring the sign is what makes the
+   back leg read as a hind leg rather than a copy of the front one. */
 @keyframes knee-back {
   0%        { transform: rotate(0deg); }     /* straight on ground */
-  30%       { transform: rotate(-28deg); }   /* folds up as leg lifts */
-  50%       { transform: rotate(-12deg); }   /* partially bent at full forward */
-  80%       { transform: rotate(-20deg); }   /* bends on downswing */
+  30%       { transform: rotate(28deg); }    /* folds up as leg lifts */
+  50%       { transform: rotate(12deg); }    /* partially bent at full forward */
+  80%       { transform: rotate(20deg); }    /* bends on downswing */
   100%      { transform: rotate(0deg); }     /* straight on landing */
 }
 @keyframes knee-front {
@@ -866,9 +869,18 @@ html, body {
 .horse.live .leg-front, .horse.pending .leg-front,
 .horse.live .leg-front-lower, .horse.pending .leg-front-lower {
   animation-duration: var(--gait-duration, 0.4s);
-  animation-delay: calc(-1 * var(--gait-phase, 0) * var(--gait-duration, 0.4s));
+  animation-delay: calc(-1 * (var(--gait-phase, 0) + var(--limb-lag, 0)) * var(--gait-duration, 0.4s));
   animation-timing-function: ease-in-out;
   animation-iteration-count: infinite;
+}
+
+/* The fore and hind keyframes are mirror images, which put both pairs at their
+   extremes on the same beat — the legs all changed direction together and read as
+   a scissor rather than a gallop. This lag offsets the forelegs by a further
+   fraction of the cycle so the hind legs drive first and the forelegs follow.
+   Inherited by .leg-front-lower, so the knee stays locked to its own hip. */
+.horse.live .leg-front, .horse.pending .leg-front {
+  --limb-lag: 0.18;
 }
 .horse.live .leg-back,        .horse.pending .leg-back        { animation-name: hip-back; }
 .horse.live .leg-back-lower,  .horse.pending .leg-back-lower  { animation-name: knee-back; }

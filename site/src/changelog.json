@@ -5,7 +5,8 @@
     "component": "site",
     "changes": [
       "horses no longer gallop in lockstep — each has its own stride phase and cycle length",
-      "leg speed now tracks the horse's token pace, so a faster producer visibly gallops harder"
+      "leg speed now tracks the horse's token pace, so a faster producer visibly gallops harder",
+      "front and hind legs no longer hit their extremes on the same beat, and the hind knee bends the opposite way to the foreleg"
     ]
   },
   {
